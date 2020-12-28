@@ -31,7 +31,11 @@ Rspecに置けるコーディングのベストプラクティスをまとめる
 - 期待する結果をまとめて記述（describe)。対象がモデルなら、どんなモデルなのか、そしてどんな振る舞いをするのかということを説明する。
 - example（ it で始まる1行）一つにつき、結果を一つだけ期待する。失敗した時に特定しやすくするため。
 - どのexampleも明示的である。
+<<<<<<< HEAD
 - 各exampleの説明は動詞で始まっている。shouldではない。User is invalid without a first name （名がなければユーザーは無効な状態である）、 User is invalid without a last name （姓がなければユーザーは無効な状態である）
+=======
+- 各exampleの説明は動詞で始まっている。shouldではない。User is invalid without a first name （名がなければユーザーは無効な状態である）、 User is invalid without a last name （姓がなければユーザーは無効な状態である）
+>>>>>>> Update README
 
 # モデルのテスト
 モデルでテストする点をまとめると下記の３点です。
