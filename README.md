@@ -117,16 +117,16 @@ user1 = User.new(
   email: 'tester@example.com'
 )
 user1.save
-user2 = User.new(
+user_duplicated_email = User.new(
   first_name: 'Jiro',
   last_name: 'Sato',
   email: 'tester@example.com'
 )
-user2.valid?
-expect(user2.errors[:email]).to include('has already been taken')
+user_duplicated_email.valid?
+expect(user_duplicated_email.errors[:email]).to include('has already been taken')
 ```
 
-## 練習問題
+### 練習問題
 Userモデルにおけるpendding状態のテストを完成させてください。
 
 ```
@@ -136,4 +136,257 @@ $ rspec ./spec/models/user_spec.rb
 正解は下記コミットです。
 commit: a49ce282ac3b4d652ab963f159c7f4cfff6d2604
 
+## インスタンスメソッド・クラスメソッドのテスト
+モデルtのメソッドのテストを行います。
+
+### commit
+```
+85fc6e07d1bb89c99469268c0167b84eea445c0a
+```
+### インスタンスメソッドのテスト
+インスタンスメソッドnameは、first_nameとlast_nameを繋げて指名を返すメソッドです。テストは下記の流れで行います。
+
+- インスタンスを立てる
+- インスタンスメソッドを呼び、コンストラクタに渡した属性値と合致しているかを確認する
+
+```
+user1 = User.new(
+  first_name: 'Taro',
+  last_name: 'Yamada',
+  email: 'tester@example.com'
+)
+expect(user1.name).to eq 'Taro Yamada'
+```
+
+### クラスメソッドのテスト
+クラスメソッドall_namesは全ての氏名を返します。テストは下記の流れで行います。
+
+- 必要に応じてfixutureをセット
+- クラスメソッドを呼び出して、戻り値をチェック
+
+```
+user1 = User.create(
+  first_name: 'Taro',
+  last_name: 'Yamada',
+  email: 'tester@example.com'
+)
+user2 = User.create(
+  first_name: 'Jiro',
+  last_name: 'Sato',
+  email: 'tester2@example.com'
+)
+expect(User.all_names).to include 'Taro Yamada'
+expect(User.all_names).to include 'Jiro Sato'
+```
+
+### 練習問題
+Userモデルにおけるpendding状態のテストを完成させてください。
+
+```
+$ rspec ./spec/models/user_spec.rb
+```
+
 # モデルのテストのリファクタリング
+ここでは、Userモデルのテストをリファクタリングしていくことで、下記のことを学びます
+
+- describe, contextでのグルーピング
+- let関数
+- beforeでのfixtureの設置
+
+## commit
+下記のコミットIDから初めてください。
+```
+$ git reset --hard 3587f63c74a6372b22b976a5e28b8ce59a2704fe
+```
+
+## describe, contextでのグルーピング
+現在のテストファイルは、１階層で表現されているため、テスト全体として可読性が劣っています。
+
+これをグルーピングしていくとで、可読性・メンテナンス性を高めます。
+
+### describe
+現在の問題の１つは、validationテストやメソッドのテストが一緒くたに記述されていることです。
+
+describeは、これらのテスト対象を区別するために使用します。
+
+### context
+現在のテストでは「~~の場合、...であること」のようになっているexampleがあります。
+
+contextは、「~~の場合」のような場合分けしている部分を区切るために使用します。
+
+*現時点ではexampleが少ないので問題ないように見えますが、「~~場合」の部分は将来的に重複していくので最初からcontextを使用しといたほうが無難だと考えてます。
+
+### 練習問題
+1. describe を利用して下記３点のグルーピングしてください。
+    - validation
+    - name
+    - all_names
+
+1. context を利用して場合訳をしてください。
+
+*回答コミット
+
+1. b140f1754ff34a43f5de2bed5ff5a54b39394763
+1. 2b492970938f86db2cae445d395a465f91f76da8
+
+## let関数
+現在のテストは、user1のようなコードの重複が多く見られます。テストにおいて過度にDRYを意識する必要はないですが、あるていどdryにすることで、可読性をあげることができます。
+
+let関数は、テストで利用できるインスタンス変数的な動きをします。
+
+*letとlet!で動きが違いあります。letはテストコード内で呼び出されたタイミングで実行され、let!はテスト実行時と同じタイミングで実行されます。
+
+before
+```
+it '無効な状態であること' do
+  user1 = User.new(
+    first_name: 'Taro',
+    last_name: 'Yamada',
+    email: 'tester@example.com'
+  )
+  user1.save
+  user_duplicated_email = User.new(
+    first_name: 'Jiro',
+    last_name: 'Sato',
+    email: 'tester@example.com'
+  )
+  user_duplicated_email.valid?
+  expect(user_duplicated_email.errors[:email]).to include('has already been taken')
+end
+```
+
+after
+```
+it '無効な状態であること' do
+  user1.save
+  user_duplicated_email = User.new(
+    first_name: 'Jiro',
+    last_name: 'Sato',
+    email: user1.email
+  )
+  user_duplicated_email.valid?
+  expect(user_duplicated_email.errors[:email]).to include('has already been taken')
+end
+```
+
+letを使うことでDRYになる以外にも、user1.emailみたいに使うことで、同じemailを利用していることが明確になります。
+
+ただし、過度にDRYにすることでuser1の内容を確認しくくなることがあります。user1を見るためにめっちゃスクロールせなあかんみたいになら、可読性が落ちているので、あえて重複させとくのはありです。そこらへんはいい塩梅でやってください。
+
+### commit
+```
+a19afcc70f392d30c7646809c68d84742e3cdb83
+```
+
+### 練習問題
+1. user1をletを利用して重複コードをなくしてください。
+1. user_first_name_nil, user_last_name_nil, user_duplicated_email, user2についてもletにしてください。
+
+*解答コミット
+1. 4c52f3b2a51aac600e76a03e8bdce9231cf05399
+1. e06b4e989f8095a2f2153cc334aa984ab2fb5f33
+
+## beforeでのfixtureの設置
+beforeはdescribe内、context内に設置できます。
+設置した階層が開始されるタイミングで実行されます。
+
+前提条件として作成するレコードの処理などを、beforeで実行することでテストで確認すべきところが明確になります。
+
+before
+```
+context 'Userレコードがある場合' do
+  it '全ての指名リストが返ること' do
+    user1.save
+    user2.save
+    expect(User.all_names).to include 'Taro Yamada'
+    expect(User.all_names).to include 'Jiro Sato'
+  end
+end
+```
+
+after
+```
+context 'Userレコードがある場合' do
+  before do
+    user1.save
+    user2.save
+  end
+
+  it '全ての指名リストが返ること' do
+    expect(User.all_names).to include 'Taro Yamada'
+    expect(User.all_names).to include 'Jiro Sato'
+  end
+end
+```
+
+it内がすっきりするほか、各contextごとの違いが明確になる。
+
+### 練習問題
+saveしているところをbefore内に移してください。
+
+正解コミット: c48f1c31c4daf84d275e03af75fd49997d9db24c
+
+# モデルのテストのリファクタリング2
+ここではfactory gemを利用してさらにリファクタリングをしていく。
+
+## commit
+```
+c48f1c31c4daf84d275e03af75fd49997d9db24c
+```
+
+## factory
+現在、テストコード内でUserの属性値をベタ書きしてnewしているが、Factoryを利用して、名前の属性値や、emailを自動で作ってもらう感じにするのが狙いです。
+
+*今は数が少ないので気にならないかもですが、大量のfixtureをセットすることになるので、最初からfactoryを利用するのが良いと思います。
+
+### factoryファイルの作成
+./spec/factories/users.rb
+```
+FactoryBot.define do
+  factory :user do
+    first_name { 'Taro' }
+    last_name { 'Yamada' }
+    email { 'tester@example.com' }
+  end
+end
+```
+
+上記のように属性値を記述することで下記のコマンドでインスタンスを立てたり、createすることができます。
+
+```
+$ FactoryBot.build(:user)
+=> #<User:0x0000564615c47578 id: nil, first_name: "Taro", last_name: "Yamada", email: "tester@example.com", created_at: nil, updated_at: nil>
+```
+
+ただしこのままだと、毎回同じ内容のインスタンスが立つので意味がないです。
+
+FFaker gemを利用して、呼び出し毎に属性値がランダムで生成されるようにしていきます。
+
+./spec/factories/users.rb
+```
+FactoryBot.define do
+  factory :user do
+    first_name { FFaker::NameJA.first_name }
+    last_name { FFaker::NameJA.last_name }
+    email { FFaker::Internet.email }
+  end
+end
+```
+
+これで呼び出し毎に属性値がランダムで生成されるようになります。
+
+```
+$ FactoryBot.build(:user)
+=> #<User:0x00005634877a9678 id: nil, first_name: "昭", last_name: "小野", email: "lynnette_borer@roobwehner.info", created_at: nil, updated_at: nil>
+
+$ FactoryBot.build(:user)
+=> #<User:0x000056348a87b198 id: nil, first_name: "颯太", last_name: "山下", email: "doretta@baileyrenner.name", created_at: nil, updated_at: nil>
+```
+
+## 練習問題
+1. Userのfactoryを作成してください。
+1. テストコードをfacotryメソッドを利用してリファクタリングしてください。
+
+解答コミット
+1. 30e830c2f8dd4431808463b6bbe2168eca4d399
+1.
