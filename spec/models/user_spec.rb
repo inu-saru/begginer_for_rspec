@@ -1,13 +1,16 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
+  let(:user1) {
+    User.new(
+      first_name: 'Taro',
+      last_name: 'Yamada',
+      email: 'tester@example.com'
+    )
+  }
+
   describe 'validation' do
     it 'first_name, first_name, emailがある場合、有効な状態であること' do
-      user1 = User.new(
-        first_name: 'Taro',
-        last_name: 'Yamada',
-        email: 'tester@example.com'
-      )
       expect(user1).to be_valid
     end
 
@@ -37,16 +40,11 @@ RSpec.describe User, type: :model do
 
     context 'emailが重複する場合' do
       it '無効な状態であること' do
-        user1 = User.new(
-          first_name: 'Taro',
-          last_name: 'Yamada',
-          email: 'tester@example.com'
-        )
         user1.save
         user_duplicated_email = User.new(
           first_name: 'Jiro',
           last_name: 'Sato',
-          email: 'tester@example.com'
+          email: user1.email
         )
         user_duplicated_email.valid?
         expect(user_duplicated_email.errors[:email]).to include('has already been taken')
@@ -56,11 +54,6 @@ RSpec.describe User, type: :model do
 
   describe 'name' do
     it '指名が正しく返ること' do
-      user1 = User.new(
-        first_name: 'Taro',
-        last_name: 'Yamada',
-        email: 'tester@example.com'
-      )
       expect(user1.name).to eq 'Taro Yamada'
     end
   end
@@ -74,11 +67,7 @@ RSpec.describe User, type: :model do
 
     context 'Userレコードがある場合' do
       it '全ての指名リストが返ること' do
-        user1 = User.create(
-          first_name: 'Taro',
-          last_name: 'Yamada',
-          email: 'tester@example.com'
-        )
+        user1.save
         user2 = User.create(
           first_name: 'Jiro',
           last_name: 'Sato',
