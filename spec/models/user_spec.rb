@@ -60,8 +60,11 @@ RSpec.describe User, type: :model do
         )
       }
 
-      it '無効な状態であること' do
+      before do
         user1.save
+      end
+
+      it '無効な状態であること' do
         user_duplicated_email.valid?
         expect(user_duplicated_email.errors[:email]).to include('has already been taken')
       end
@@ -82,9 +85,12 @@ RSpec.describe User, type: :model do
     end
 
     context 'Userレコードがある場合' do
-      it '全ての指名リストが返ること' do
+      before do
         user1.save
         user2.save
+      end
+
+      it '全ての指名リストが返ること' do
         expect(User.all_names).to include 'Taro Yamada'
         expect(User.all_names).to include 'Jiro Sato'
       end
