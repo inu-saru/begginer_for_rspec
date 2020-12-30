@@ -45,4 +45,10 @@ RSpec.describe User, type: :model do
     user_duplicated_email.valid?
     expect(user_duplicated_email.errors[:email]).to include('has already been taken')
   end
+
+  it 'name: 指名が正しく返ること'
+
+  it 'all_names: Userレコードがない場合、[]が返ること'
+
+  it 'all_names: Userレコードがある場合、全ての指名リストが返ること'
 end
