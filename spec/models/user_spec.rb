@@ -46,9 +46,31 @@ RSpec.describe User, type: :model do
     expect(user_duplicated_email.errors[:email]).to include('has already been taken')
   end
 
-  it 'name: 指名が正しく返ること'
+  it 'name: 指名が正しく返ること' do
+    user1 = User.new(
+      first_name: 'Taro',
+      last_name: 'Yamada',
+      email: 'tester@example.com'
+    )
+    expect(user1.name).to eq 'Taro Yamada'
+  end
 
-  it 'all_names: Userレコードがない場合、[]が返ること'
+  it 'all_names: Userレコードがない場合、[]が返ること' do
+    expect(User.all_names).to eq []
+  end
 
-  it 'all_names: Userレコードがある場合、全ての指名リストが返ること'
+  it 'all_names: Userレコードがある場合、全ての指名リストが返ること' do
+    user1 = User.create(
+      first_name: 'Taro',
+      last_name: 'Yamada',
+      email: 'tester@example.com'
+    )
+    user2 = User.create(
+      first_name: 'Jiro',
+      last_name: 'Sato',
+      email: 'tester2@example.com'
+    )
+    expect(User.all_names).to include 'Taro Yamada'
+    expect(User.all_names).to include 'Jiro Sato'
+  end
 end
