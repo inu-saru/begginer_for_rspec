@@ -1,20 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  let(:user1) {
-    User.new(
-      first_name: 'Taro',
-      last_name: 'Yamada',
-      email: 'tester@example.com'
-    )
-  }
-  let(:user2) {
-    User.new(
-      first_name: 'Jiro',
-      last_name: 'Sato',
-      email: 'tester2@example.com'
-    )
-  }
+  let(:user1) { FactoryBot.build(:user) }
+  let(:user2) { FactoryBot.build(:user) }
 
   describe 'validation' do
     it 'first_name, first_name, emailがある場合、有効な状態であること' do
@@ -22,13 +10,7 @@ RSpec.describe User, type: :model do
     end
 
     context 'first_nameがない場合' do
-      let(:user_first_name_nil) {
-        User.new(
-          first_name: nil,
-          last_name: 'Yamada',
-          email: 'tester@example.com'
-        )
-      }
+      let(:user_first_name_nil) { FactoryBot.build(:user, first_name: nil) }
 
       it '無効な状態であること' do
         user_first_name_nil.valid?
@@ -37,13 +19,7 @@ RSpec.describe User, type: :model do
     end
 
     context 'last_nameがない場合' do
-      let(:user_last_name_nil) {
-        User.new(
-          first_name: 'Taro',
-          last_name: nil,
-          email: 'tester@example.com'
-        )
-      }
+      let(:user_last_name_nil) { FactoryBot.build(:user, last_name: nil) }
 
       it '無効な状態であること' do
         user_last_name_nil .valid?
@@ -52,13 +28,7 @@ RSpec.describe User, type: :model do
     end
 
     context 'emailが重複する場合' do
-      let(:user_duplicated_email) {
-        User.new(
-          first_name: 'Jiro',
-          last_name: 'Sato',
-          email: user1.email
-        )
-      }
+      let(:user_duplicated_email) { FactoryBot.build(:user, email: user1.email) }
 
       before do
         user1.save
@@ -73,7 +43,7 @@ RSpec.describe User, type: :model do
 
   describe 'name' do
     it '指名が正しく返ること' do
-      expect(user1.name).to eq 'Taro Yamada'
+      expect(user1.name).to eq "#{user1.first_name} #{user1.last_name}"
     end
   end
 
@@ -91,8 +61,8 @@ RSpec.describe User, type: :model do
       end
 
       it '全ての指名リストが返ること' do
-        expect(User.all_names).to include 'Taro Yamada'
-        expect(User.all_names).to include 'Jiro Sato'
+        expect(User.all_names).to include "#{user1.first_name} #{user1.last_name}"
+        expect(User.all_names).to include "#{user2.first_name} #{user2.last_name}"
       end
     end
   end
