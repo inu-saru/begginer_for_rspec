@@ -13,25 +13,25 @@ RSpec.describe User, type: :model do
 
     context 'first_nameがない場合' do
       it '無効な状態であること' do
-        user1 = User.new(
+        user_first_name_nil = User.new(
           first_name: nil,
           last_name: 'Yamada',
           email: 'tester@example.com'
         )
-        user1.valid?
-        expect(user1.errors[:first_name]).to include("can't be blank")
+        user_first_name_nil.valid?
+        expect(user_first_name_nil.errors[:first_name]).to include("can't be blank")
       end
     end
 
     context 'last_nameがない場合' do
       it '無効な状態であること' do
-        user1 = User.new(
+        user_last_name_nil = User.new(
           first_name: 'Taro',
           last_name: nil,
           email: 'tester@example.com'
         )
-        user1.valid?
-        expect(user1.errors[:last_name]).to include("can't be blank")
+        user_last_name_nil .valid?
+        expect(user_last_name_nil .errors[:last_name]).to include("can't be blank")
       end
     end
 
