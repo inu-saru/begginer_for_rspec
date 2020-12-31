@@ -4,9 +4,20 @@ RSpec.describe 'Users API', type: :request do
   let!(:user1) { FactoryBot.create(:user) }
 
   describe 'GET /api/v1/users/:id' do
-    it 'success/200'
+    it 'success/200' do
+      get api_v1_user_path(user1.id)
 
-    it '正しくuser1の情報が返ること'
+      expect(response).to be_successful
+      expect(response.status).to eq 200
+    end
+
+    it '正しくuser1の情報が返ること' do
+      get api_v1_user_path(user1.id)
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      expect(json['name']).to eq user1.name
+      expect(json['email']).to eq user1.email
+    end
   end
 
   describe 'POST /api/v1/users' do
