@@ -388,5 +388,63 @@ $ FactoryBot.build(:user)
 1. テストコードをfacotryメソッドを利用してリファクタリングしてください。
 
 解答コミット
-1. 30e830c2f8dd4431808463b6bbe2168eca4d399
-1.
+1. 5f63f2ff563155cc8d2c56af9131b414e72cae68
+1. c81a2aa25251fbb01eb63f5ffc13697ada8383ab
+
+# APIのテスト
+ここではAPIを通して、コントローラーのテストを行います。
+コントローラーのテストで行うのは下記の３点です。
+
+- pathが通ること
+- responseの内容を確認する
+- DBに影響を与える場合は、その変化を確認する
+
+## branch
+05/setup
+
+## GETのテスト
+GETのテストは下記の流れで行ってます。
+
+- httpリクエスト
+- response.statusの確認
+- response.bodyの確認
+
+```
+it 'success/200' do
+  get api_v1_user_path(user1.id)
+
+  expect(response).to be_successful
+  expect(response.status).to eq 200
+
+  json = JSON.parse(response.body)
+  expect(json['name']).to eq user1.name
+  expect(json['email']).to eq user1.email
+end
+```
+
+## POSTのテスト
+POSTのテストは下記の流れで行ってます。
+
+- httpリクエスト
+- tableの変化を確認
+- responseの確認
+
+```
+it '正しくレコードが作成されること' do
+  expect do
+    post api_v1_users_path, params: params1
+  end.to change(User, :count).by(1)
+
+  json = JSON.parse(response.body)
+  expect(json['name']).to eq "#{params1[:user][:first_name]} #{params1[:user][:last_name]}"
+  expect(json['email']).to eq params1[:user][:email]
+end
+```
+
+## 練習問題
+下記のpenndingを実装してください。
+```
+$ rspec ./spec/requests/api/v1/users_spec.rb
+```
+
+解答branch: 05/api
